@@ -17,7 +17,7 @@ async Task BroadcastPresence(int port)
 	{
 		var bytes = Encoding.ASCII.GetBytes("Hello, are you there?");
 		await client.SendAsync(bytes, bytes.Length, endpoint);
-		await Task.Delay(5000); // Broadcast every 5 seconds
+		await Task.Delay(5000);
 	}
 }
 
@@ -27,12 +27,13 @@ async Task ListenForBroadcasts(int port)
 	using var listener = new UdpClient(port);
 
 	var localAddresses = NetworkInterface.GetAllNetworkInterfaces()
-		.Where(n => n.OperationalStatus == OperationalStatus.Up)
-		.Where(n => n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
-		.SelectMany(n => n.GetIPProperties().UnicastAddresses)
-		.Where(ua => ua.Address.AddressFamily == AddressFamily.InterNetwork) // IP v4
-		.Select(ua => ua.Address?.ToString())
+		.Where(ni => ni.OperationalStatus == OperationalStatus.Up)
+		.Where(ni => ni.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+		.SelectMany(ni => ni.GetIPProperties().UnicastAddresses)
+		.Where(a => a.Address.AddressFamily == AddressFamily.InterNetwork) // IP v4
+		.Select(a => a.Address)
 		.Where(a => a is not null)
+		.Select(a => a.ToString())
 		.ToHashSet();
 
 	while (true)
